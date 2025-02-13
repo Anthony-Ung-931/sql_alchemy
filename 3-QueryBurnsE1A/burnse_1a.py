@@ -54,7 +54,7 @@ try:
             Customer.contactFirstName, \
             Customer.phone,\
             Customer.creditLimit)\
-        .order_by(Customer.creditLimit)
+        .order_by(Customer.creditLimit.desc())
 
     results = query.all()
     for row in results:
