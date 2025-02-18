@@ -9,7 +9,6 @@ import sys
 
 def DEBUG_PRINT(message):
     print(message)
-    
     yes = input('\n' 'Enter any string to exit.' '\n')
 
 
@@ -20,8 +19,19 @@ except:
                'You do not have the appropriate\n'\
                'connect.py file in the right directory\n')
 
+'''
+class Menu:
+    MENU_CHOICES = [
+        '1. View most recent orders'
+    ]
+    
+    def print_menu():
+        for choice in MENU_CHOICES:
+            print(menu)
+'''
 
 def run():
+    Engine = connect.connect()
     '''
     Pseudocode
     
