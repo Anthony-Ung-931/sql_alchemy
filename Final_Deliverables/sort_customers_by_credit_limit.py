@@ -1,21 +1,17 @@
 '''
 Anthony Ung, Cory Lillis
 ORM Project
-Aggregate
+Sort Customers By Credit Limit
 
-In addition to the functionality discussed in class, 
-    we demonstrate aggregation in Python's ORM.
-
-Our business would want to know which customers 
-    are making the biggest.
+This query sorts customers by credit limit.
+This could be valuable to a business in order to inform marketing decisions.
 '''
 
 # Necessary import statements
 import sqlalchemy as alch
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.exc import SQLAlchemyError
-from mysql.connector.errors import IntegrityError
+from sqlalchemy import (Table, Column, Integer, Numeric, String, DateTime, Text,
+ForeignKey, PrimaryKeyConstraint, ForeignKeyConstraint)
 
 # A helpful debug method 
 def DEBUG_PRINT(message):
@@ -33,16 +29,20 @@ except:
 
 # Prepare the engine and session
 engine = Engine = connect.connect()
-Base = automap_base()
-Base.prepare(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# Grabbing tables
-Base = automap_base()
+'''
+Grabbing tables
+I need the {'extend_existing': True} option so I do not get errors
+    because this metadata instance is already defined.
+https://stackoverflow.com/questions/37908767/table-roles-users-is-already-defined-for-this-metadata-instance
+'''
+Base = alch.orm.declarative_base()
 
 class Customer(Base):
     __tablename__ = 'customers'
+
     customerNumber = Column(Integer, primary_key=True)
     contactLastName = Column(String(50), nullable=False)
     contactFirstName = Column(String(50), nullable=False)
