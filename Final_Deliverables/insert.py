@@ -9,11 +9,13 @@ In addition to inserting and updating records, we have found ways to
 '''
 
 # Necessary import statements
-import sqlalchemy as a
+import sqlalchemy as alch
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.exc import SQLAlchemyError
 from mysql.connector.errors import IntegrityError
+from sqlalchemy import (Table, Column, Integer, Numeric, String, DateTime, Text,
+ForeignKey, PrimaryKeyConstraint, ForeignKeyConstraint)
 
 # A helpful debug method 
 def DEBUG_PRINT(message):
@@ -30,20 +32,13 @@ except:
                'connect.py file in the right directory\n')
 
 # Prepare the engine and session
-engine = Engine = connect.connect()
+engine = connect.connect()
 Base = automap_base()
 Base.prepare(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-# Grabbing tables
-Order = Base.classes.orders
-OrderDetail = Base.classes.orderdetails
-Customer = Base.classes.customers
-Product = Base.classes.products
-ProductLine = Base.classes.productlines
 Employee = Base.classes.employees
-
 
 '''
 I inserted myself into the table.
@@ -51,6 +46,14 @@ reportsTo is NULLable because the President does not report to anybody.
 In addition to the parts of SQLAlchemy that were discussed in class,
 	Cory implemented rollback for when an error is raised.
 '''
+try:
+    print('Deleting Employee so I can insert him again.' '\n')
+    employee = session.query(Employee).filter(Employee.employeeNumber == 1950).first()
+    session.delete(employee)
+    session.commit()
+except SQLAlchemyError as e:
+    print('Target employee does not exist.')
+     
 try:
     add_employee = Employee( \
                         employeeNumber = 1950, \
@@ -69,6 +72,22 @@ except SQLAlchemyError as e:
     print(f"Transaction rolled back due to error: {e}")
     print(f"\n" "This block would be reached if the insertion was already completed." "\n\n")
 
+try:
+    employee = session.query(Employee.employeeNumber, \
+                              Employee.lastName, \
+                              Employee.firstName, \
+                              Employee.extension, \
+                              Employee.email, \
+                              Employee.officeCode, \
+                              Employee.reportsTo, \
+                              Employee.jobTitle \
+                              ).filter(Employee.employeeNumber == 1950).first()
+    
+    print('Employee after insertion')
+    print(employee)
+except SQLAlchemyError as e:
+    print(e)
+     
 
 '''
 Demonstrates updating a record.
