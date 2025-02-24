@@ -47,9 +47,6 @@ ProductLine = Base.classes.productlines
 Employee = Base.classes.employees
 
 
-'''
-
-'''
 try:
     stmt = alch.select(Customer.customerName, \
                             alch.func.sum(OrderDetail.quantityOrdered * OrderDetail.priceEach).label('Total Purchases'))\

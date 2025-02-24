@@ -13,9 +13,6 @@ import sqlalchemy as alch
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.exc import SQLAlchemyError
-from mysql.connector.errors import IntegrityError
-from sqlalchemy import (Table, Column, Integer, Numeric, String, DateTime, Text,
-ForeignKey, PrimaryKeyConstraint, ForeignKeyConstraint)
 
 # A helpful debug method 
 def DEBUG_PRINT(message):
@@ -38,13 +35,11 @@ Base.prepare(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+# Get the class to table mapping
 Employee = Base.classes.employees
 
 '''
-I inserted myself into the table.
-reportsTo is NULLable because the President does not report to anybody.
-In addition to the parts of SQLAlchemy that were discussed in class,
-	Cory implemented rollback for when an error is raised.
+I delete myself from the table so I can insert myself again.
 '''
 try:
     print('Deleting Employee so I can insert him again.' '\n')
@@ -54,6 +49,12 @@ try:
 except SQLAlchemyError as e:
     print('Target employee does not exist.')
      
+'''
+I inserted myself into the table.
+reportsTo is NULLable because the President does not report to anybody.
+In addition to the parts of SQLAlchemy that were discussed in class,
+	Cory implemented rollback for when an error is raised.
+'''
 try:
     add_employee = Employee( \
                         employeeNumber = 1950, \
@@ -72,6 +73,10 @@ except SQLAlchemyError as e:
     print(f"Transaction rolled back due to error: {e}")
     print(f"\n" "This block would be reached if the insertion was already completed." "\n\n")
 
+'''
+    Unfortunately, there is no equivalent to SELECT *
+        so I have to unwrap all the fields.
+'''
 try:
     employee = session.query(Employee.employeeNumber, \
                               Employee.lastName, \
@@ -93,30 +98,33 @@ except SQLAlchemyError as e:
 Demonstrates updating a record.
 '''
 try:
-	print('Updating an Employee record. This is idempotent and has been done before.\n')
 	users = session.query(Employee).filter(Employee.lastName == 'Ung').filter(Employee.firstName == 'Anthony')
 	users.update({Employee.jobTitle: 'Research Assistant'})
 	session.commit()
+except SQLAlchemyError as e:
+    session.rollback()
+    print(f"Transaction rolled back due to error: {e}")
+    print(f"\n" "Rollback is not supposed to happen in this case." "\n\n")
 
-	print('Updated employee record after my job got eliminated:\n')
-	users = session.query(Employee)\
-                    .filter(Employee.lastName == 'Ung')\
-                    .filter(Employee.firstName == 'Anthony')
-	'''
-        Unfortunately, there is no equivalent to 
-            SELECT * (which grabs the entire row of records matching a WHERE clause).
-            The .all() method selects all records but there is no way for us to
-                control the SELECT clause from SQL Alchemy when we are working with Automap.
-    '''
-	for row in users.all():
-    		print(row.__dict__)
+try:
+    print('\n' 'Updated employee record after my job got eliminated:')
+    employee = session.query(Employee.employeeNumber, \
+                                Employee.lastName, \
+                                Employee.firstName, \
+                                Employee.extension, \
+                                Employee.email, \
+                                Employee.officeCode, \
+                                Employee.reportsTo, \
+                                Employee.jobTitle \
+                                ).filter(Employee.employeeNumber == 1950).first()
+    print(employee)
 except SQLAlchemyError as e:
     session.rollback()
     print(f"Transaction rolled back due to error: {e}")
     print(f"\n" "Rollback is not supposed to happen in this case." "\n\n")
 
 # prompt user to close then close session and engine
-yes = input("Press any key to close")
+yes = input('\n' "Press any key to close")
 
 #cleanup
 session.close()
