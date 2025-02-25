@@ -152,7 +152,7 @@ def close_connection():
     engine = globals.engine
     session = globals.session
 
-    yes = input('\n' "Press any key to close")
+    yes = input('\n' "Press any key to close" '\n')
 
     #cleanup
     session.close()

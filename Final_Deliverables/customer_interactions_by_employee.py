@@ -75,7 +75,7 @@ def query():
                 alch.func.coalesce(alch.func.count(Customer.salesRepEmployeeNumber), 0).label('Number of Employees'), \
                 manager.lastName, \
                 manager.firstName) \
-            .join(Customer, Customer.salesRepEmployeeNumber == Employee.employeeNumber, isouter = True)\
+            .outerjoin(Customer, Customer.salesRepEmployeeNumber == Employee.employeeNumber)\
             .outerjoin(manager, Employee.reportsTo == manager.employeeNumber)\
             .group_by(Employee.employeeNumber)\
             .order_by(alch.desc('Number of Employees'))
@@ -95,7 +95,7 @@ def close_connection():
     engine = globals.engine
 
     # prompt user to close then close session and engine
-    yes = input("Press any key to close")
+    yes = input("Press any key to close" "\n")
 
     #cleanup
     session.close()
