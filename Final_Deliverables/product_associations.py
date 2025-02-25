@@ -57,26 +57,31 @@ def init_tables():
     Base = globals.Base
 
     # Grabbing tables
-    tables.Order = Base.classes.orders
     tables.OrderDetail = Base.classes.orderdetails
-    tables.Customer = Base.classes.customers
+    tables.Product = Base.classes.products
 
 
 def query():
     session = globals.session
 
-    Order = tables.Order
     OrderDetail = tables.OrderDetail
-    Customer = tables.Customer
+    Product = tables.Product
+
+    OtherOrderDetail = alch.orm.aliased(OrderDetail)
+    OtherProduct = alch.orm.aliased(Product)
 
     try:
-        stmt = alch.select(Customer.customerName, \
-                                alch.func.sum(OrderDetail.quantityOrdered * OrderDetail.priceEach).label('Total Purchases'))\
-                        .join(Order, Customer.customerNumber == Order.customerNumber)\
-                        .join(OrderDetail, Order.orderNumber == OrderDetail.orderNumber)\
-                        .group_by(Customer.customerNumber)\
-                        .order_by(alch.desc('Total Purchases'))\
-                        .limit(10)
+        stmt = alch.select(alch.func.count(OrderDetail.orderNumber).label('num_occurences'), \
+                    Product.productName, OtherProduct.productName)\
+                .select_from(OrderDetail)\
+                .join(OtherOrderDetail, OrderDetail.orderNumber == OtherOrderDetail.orderNumber)\
+                .join(Product, Product.productCode == OrderDetail.productCode)\
+                .join(OtherProduct, OtherProduct.productCode == OtherOrderDetail.productCode)\
+                .group_by(Product.productCode, OtherProduct.productCode)\
+                .where(OtherProduct.productCode > Product.productCode)\
+                .order_by(alch.desc('num_occurences'))\
+                .limit(10)
+
         for row in session.execute(stmt):
             print(row)
     except SQLAlchemyError as e:
@@ -88,7 +93,7 @@ def close_connection():
     engine = globals.engine
 
     # prompt user to close then close session and engine
-    yes = input("Press any key to close")
+    yes = input("Press any key to close" "\n")
 
     #cleanup
     session.close()

@@ -23,6 +23,8 @@ def DEBUG_PRINT(message):
     The code examples have straight-line code with no helper functions.
     We would not ship straight-line code with no helper functions to a real client
         because that is very hard to read.
+    Helper functions that lack code comments 
+        imply that the functions do exactly what their names imply.
 '''
 class globals:
     engine = None
@@ -115,9 +117,6 @@ def insert_record():
         print(e)
 
 
-'''
-    Demonstrates updating a record.
-'''   
 def update_record():
     session = globals.session
     Employee = globals.Employee
@@ -149,7 +148,6 @@ def update_record():
         print(f"\n" "Rollback is not supposed to happen in this case." "\n\n")
 
 
-# prompt user to close then close session and engine
 def close_connection():
     engine = globals.engine
     session = globals.session
@@ -160,11 +158,13 @@ def close_connection():
     session.close()
     engine.dispose()
 
+
 def run():
     init_connection()
     delete_record()
     insert_record()
     update_record()
     close_connection()
+
 
 run()
